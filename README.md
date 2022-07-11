@@ -1,5 +1,7 @@
 # CubemapMaker
-Create 360 Cubemaps from within Unity games
+Create 360 Cubemaps from within Unity games for use in The Cyber Grind
+
+![4-2 Cubemap](img/using_cerberus.png)
 
 ## Usage
 
@@ -14,6 +16,10 @@ You can find the `config.cfg` in `%AppData%/CubemapMaker/`. There you can change
 The following was taken in ULTRAKILL's 4-2:
 
 [![4-2 Cubemap](img/greed_map.png)](https://momento360.com/e/u/ae9b53244fe947fea807478156c30b5d?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium)
+
+Here is another of the Cerberus Boss Room:
+
+[![Cerberus Cubemap](img/cerberus_map.png)](https://momento360.com/e/u/d5900bba103a4a329c96867bd9a33942?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium)
 
 While this plugin was developed with ULTRAKILL in mind, this mod works with most Unity games. This image was taken in the main menu of Muck:
 
