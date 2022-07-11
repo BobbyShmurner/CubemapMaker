@@ -46,7 +46,7 @@ namespace CubemapMaker
 
         private void SetupConfig() {
             string configFolder = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\CubemapMaker";
-            string outputFolder = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)}\\CubemapMaker";
+            string outputFolder = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)}\\Cubemaps";
 
             Directory.CreateDirectory(configFolder);
 
