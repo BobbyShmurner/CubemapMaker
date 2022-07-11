@@ -9,7 +9,7 @@ The image will be saved to The ULTRAKILL's Cyber Grind Skybox folder by default,
 
 You can find the `config.cfg` in `%AppData%/CubemapMaker/`. There you can change the output path, the capture key, and the output resolution.
 
-## Examples
+## Examples (Click to view in 360)
 
 The following was taken in ULTRAKILL's 4-2:
 
