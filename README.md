@@ -1,4 +1,4 @@
-# CubemapMaker
+# Cubemap Maker
 Create 360 Cubemaps from within Unity games for use in The Cyber Grind
 
 ![4-2 Cubemap](img/using_cerberus.png)
@@ -24,3 +24,8 @@ Here is another of the Cerberus Boss Room:
 While this plugin was developed with ULTRAKILL in mind, this mod works with most Unity games. This image was taken in the main menu of Muck:
 
 [![Muck Main Menu Cubemap](img/muck_map.png)](https://momento360.com/e/u/b4502e9ee399400a94f2523a57ad6293?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium)
+
+## Note
+
+There's an odd issue in ULTRAKILL where the camera kinda just stretches after capturing a cubemap.
+No clue why this happens, but its reloading checkpoint or backing out of a level will fix the issue
