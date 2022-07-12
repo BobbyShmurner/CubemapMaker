@@ -13,11 +13,11 @@ You can find the `config.cfg` in `%AppData%/CubemapMaker/`. There you can change
 
 ## Orientation Settings
 
-There are 3 orientation settings avalible:
+There are 3 orientation settings available:
 
-**- Yaw (Default):** This will capture the cubemap in the direction your facing but will keep the world upright
+**- Yaw (Default):** This will capture the cubemap in the direction you're facing but will keep the world upright
 
-**- Accurate:** This will accuratly capture rotation in the cubemap, so whereever you are looking will be the forward position. This can create some very disorienting cubemaps, so use with caution! (Or don't, I dont really care tbh)
+**- Accurate:** This will accurately capture rotation in the cubemap, so wherever you are looking will be the forward position. This can create some very disorienting cubemaps, so use with caution! (Or don't, I don't really care tbh)
 
 **- None:** This won't take the camera's orientation into account at all
 
