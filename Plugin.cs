@@ -73,18 +73,24 @@ namespace CubemapMaker
 
         private void Update() {
             if (!Input.GetKeyDown(configCaptureKeybind.Value.ToLower())) return;
-            string fileName = $"{Application.productName} {DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss")}.png";
 
+            string fileName = $"{Application.productName} {DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss")}.png";
             string filePath = Path.GetFullPath(Path.Combine(configOutputPath.Value, fileName));
 
             RenderTexture cubeTex = new RenderTexture(configOutputWidth.Value, configOutputWidth.Value, 32);
             RenderTexture equirectTex = new RenderTexture(cubeTex.width, (int)(cubeTex.width * 0.5f), 32);
-            Texture2D tex = new Texture2D(cubeTex.width, cubeTex.height);
+            Texture2D tex = new Texture2D(equirectTex.width, equirectTex.height);
 
             cubeTex.dimension = TextureDimension.Cube;
 
-            Camera.main.RenderToCubemap(cubeTex);
-            cubeTex.ConvertToEquirect(equirectTex);
+            // Using A Stereoscopic Eye allows for roation to also be captured
+            // We rotate before capturing because the image is always rotated 90 degrees to the left
+
+            Camera.main.transform.Rotate(new Vector3(0, 90, 0));
+            Camera.main.RenderToCubemap(cubeTex, 63, Camera.MonoOrStereoscopicEye.Left);
+            cubeTex.ConvertToEquirect(equirectTex, Camera.MonoOrStereoscopicEye.Mono);
+            Camera.main.transform.Rotate(new Vector3(0, -90, 0));
+            Camera.main.ResetAspect();
 
             RenderTexture.active = equirectTex;
             tex.ReadPixels(new Rect(0, 0, equirectTex.width, equirectTex.height), 0, 0);
