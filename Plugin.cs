@@ -21,6 +21,7 @@ namespace CubemapMaker
         internal static ConfigFile config;
         internal static ConfigEntry<string> configCaptureKeybind;
         internal static ConfigEntry<string> configOutputPath;
+        internal static ConfigEntry<string> configCaptureOrientation;
         internal static ConfigEntry<int> configOutputWidth;
         
         private void Awake()
@@ -62,6 +63,7 @@ namespace CubemapMaker
 
             configOutputPath = config.Bind("General", "OutputPath", outputFolder, "The path that cubemaps will be outputed to");
             configOutputWidth = config.Bind("General", "OutputWidth", 4096, "The width of the outputed cubemap");
+            configCaptureOrientation = config.Bind("General", "CaptureOrientation", "Yaw", new ConfigDescription("The orientation used to capture the cubemap in\nYaw: This will capture the cubemap in the direction your facing but will keep the world upright\nAccurate: This will accuratly capture rotation in the cubemap, so whereever you are looking will be the forward position\nNone: This won't take the camera's orientation into account at all", new AcceptableValueList<string>("Yaw", "Accurate", "None")));
             configCaptureKeybind = config.Bind("General.Keybinds", "CaptureButton", "f10", "The key used to capture a cubemap");
 
             outputFolder = configOutputPath.Value;
@@ -82,6 +84,18 @@ namespace CubemapMaker
             Texture2D tex = new Texture2D(equirectTex.width, equirectTex.height);
 
             cubeTex.dimension = TextureDimension.Cube;
+            Quaternion originalRot = Camera.main.transform.rotation;
+
+            switch (configCaptureOrientation.Value.ToLower()) {
+                case "none":
+                    Camera.main.transform.eulerAngles = Vector3.zero;
+                    break;
+                case "accurate":
+                    break;
+                default:
+                    Camera.main.transform.eulerAngles = new Vector3(0, Camera.main.transform.eulerAngles.y, 0);
+                    break;
+            }
 
             // Using A Stereoscopic Eye allows for roation to also be captured
             // We rotate before capturing because the image is always rotated 90 degrees to the left
@@ -89,7 +103,8 @@ namespace CubemapMaker
             Camera.main.transform.Rotate(new Vector3(0, 90, 0));
             Camera.main.RenderToCubemap(cubeTex, 63, Camera.MonoOrStereoscopicEye.Left);
             cubeTex.ConvertToEquirect(equirectTex, Camera.MonoOrStereoscopicEye.Mono);
-            Camera.main.transform.Rotate(new Vector3(0, -90, 0));
+
+            Camera.main.transform.rotation = originalRot;
             Camera.main.ResetAspect();
 
             RenderTexture.active = equirectTex;
