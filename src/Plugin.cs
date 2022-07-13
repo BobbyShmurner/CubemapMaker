@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Collections.Generic;
 
 using BepInEx;
 using BepInEx.Logging;
@@ -23,6 +24,7 @@ namespace CubemapMaker
         internal static ConfigEntry<string> configTransCaptureKeybind;
         internal static ConfigEntry<string> configOutputPath;
         internal static ConfigEntry<string> configCaptureOrientation;
+        internal static ConfigEntry<bool> configCaptureUI;
         internal static ConfigEntry<int> configOutputWidth;
         
         private void Awake()
@@ -64,6 +66,7 @@ namespace CubemapMaker
 
             configOutputPath = config.Bind("General", "OutputPath", outputFolder, "The path that cubemaps will be outputed to");
             configOutputWidth = config.Bind("General", "OutputWidth", 4096, "The width of the outputed cubemap");
+            configCaptureUI = config.Bind("General", "CaptureUI", true, "Whether to capture UI in a cubemap or not");
             configCaptureOrientation = config.Bind("General", "CaptureOrientation", "Yaw", new ConfigDescription("The orientation used to capture the cubemap in\nYaw: This will capture the cubemap in the direction your facing but will keep the world upright\nAccurate: This will accuratly capture rotation in the cubemap, so whereever you are looking will be the forward position\nNone: This won't take the camera's orientation into account at all", new AcceptableValueList<string>("Yaw", "Accurate", "None")));
 
             configCaptureKeybind = config.Bind("General.Keybinds", "CaptureButton", "f10", "The key used to capture a cubemap");
@@ -126,6 +129,16 @@ namespace CubemapMaker
                 Camera.main.backgroundColor = Color.clear;
             }
 
+            // Disable UI
+            Dictionary<Canvas, bool> originalCanvasActives = new Dictionary<Canvas, bool>();
+
+            if (!configCaptureUI.Value) {
+                foreach (Canvas canvas in GameObject.FindObjectsOfType<Canvas>()) {
+                    originalCanvasActives.Add(canvas, canvas.enabled);
+                    canvas.enabled = false;
+                }
+            }
+
             // Capture the cubemap
             cubeTex.dimension = TextureDimension.Cube;
             Camera.main.transform.Rotate(new Vector3(0, 90, 0));
@@ -140,6 +153,13 @@ namespace CubemapMaker
             // Reset Transparent Settings. No point in branching here
             Camera.main.clearFlags = originalClearFlags;
             Camera.main.backgroundColor = originalColor;
+
+            // Enable UI
+            if (!configCaptureUI.Value) {
+                foreach (var canvas in originalCanvasActives) {
+                    canvas.Key.enabled = canvas.Value;
+                }
+            }
 
             // Render the cubemap to a Texture2D
             RenderTexture.active = equirectTex;
