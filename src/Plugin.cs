@@ -88,6 +88,10 @@ namespace CubemapMaker
                     cgSecondPlayer = false;
                     
                     Plugin.Log.LogWarning("Tried capturing a CG Second Player cubemap outside of the cyber grind. Capturing normal cubemap instead");
+                } else if (Application.productName != "ULTRAKILL") {
+                    cgSecondPlayer = false;
+                    
+                    Plugin.Log.LogWarning("Tried capturing a CG Second Player cubemap in a game that isn't ULTRAKILL. Capturing normal cubemap instead");
                 } else {
                     Plugin.Log.LogInfo("Capturing CG Second Player Cubemap");
                 }
