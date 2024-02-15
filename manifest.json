@@ -1,0 +1,9 @@
+{
+	"name": "CubemapMaker",
+	"description": "Create 360 Cubemaps from within Unity games for use in The Cyber Grind",
+	"version_number": "1.0.4",
+	"website_url": "https://github.com/BobbyShmurner/CubemapMaker",
+	"dependencies": [
+		"BepInEx-BepInExPack-5.4.2100"
+	]
+}
