@@ -26,27 +26,26 @@ namespace CubemapMaker
         internal static ConfigEntry<string> configCaptureOrientation;
         internal static ConfigEntry<bool> configCaptureUI;
         internal static ConfigEntry<int> configOutputWidth;
+
+        internal static Camera renderCam = null;
         
         private void Awake()
         {
             Logger.LogInfo($"Loading Plugin {PluginInfo.PLUGIN_GUID}...");
 
-            Plugin.Log = base.Logger;
-            Plugin.Log.LogInfo("Created Global Logger");
+            Log = Logger;
+            Log.LogInfo("Created Global Logger");
 
             harmony = new Harmony("CubemapMaker");
-
-            Plugin.Log.LogInfo("Applied All Patches");
+            harmony.PatchAll();
+            Log.LogInfo("Applied All Patches");
 
             SetupConfig();
-
-            Plugin.Log.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            Log.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
         }
 
-        private void OnDestroy()
-        {
-            harmony?.UnpatchSelf();
-        }
+        private void OnDestroy() =>
+            harmony?.UnpatchSelf(); 
 
         private void SetupConfig() {
             string configFolder = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\CubemapMaker";
@@ -59,7 +58,7 @@ namespace CubemapMaker
                 // If that's the case, set the default location to the Cybergrind folder
 
                 outputFolder = Path.GetFullPath(Path.Combine(Application.dataPath, "..\\..\\ULTRAKILL\\Cybergrind\\Textures\\Skyboxes\\Captured"));
-                Plugin.Log.LogInfo("Found ULTRAKILL Install! Set the capture output to the Cybergrind directory");
+                Log.LogInfo("Found ULTRAKILL Install! Set the capture output to the Cybergrind directory");
             }
 
             config = new ConfigFile(Path.Combine(configFolder, "config.cfg"), true);
@@ -76,68 +75,67 @@ namespace CubemapMaker
 
             Directory.CreateDirectory(outputFolder);
 
-            Plugin.Log.LogInfo("Loaded Config");
+            Log.LogInfo("Loaded Config");
         }
 
         private void CaptureCubemap(bool transparent, bool cgSecondPlayer = false) {
-            if (transparent) Plugin.Log.LogInfo("Capturing Transparent Cubemap");
-            else Plugin.Log.LogInfo("Capturing Cubemap");
+            renderCam ??= gameObject.AddComponent<Camera>();
+            renderCam.CopyFrom(Camera.main);
+
+            renderCam.transform.rotation = Camera.main.transform.rotation;
+            renderCam.transform.position = Camera.main.transform.position;
+
+            if (transparent) Log.LogInfo("Capturing Transparent Cubemap");
+            else Log.LogInfo("Capturing Cubemap");
 
             if (cgSecondPlayer) {
-                if (SceneManager.GetActiveScene().name != "Endless") {
+                if (SceneHelper.CurrentScene != "Endless") {
                     cgSecondPlayer = false;
-                    
-                    Plugin.Log.LogWarning("Tried capturing a CG Second Player cubemap outside of the cyber grind. Capturing normal cubemap instead");
+                    Log.LogWarning("Tried capturing a CG Second Player cubemap outside of the cyber grind. Capturing normal cubemap instead");
                 } else if (Application.productName != "ULTRAKILL") {
                     cgSecondPlayer = false;
-                    
-                    Plugin.Log.LogWarning("Tried capturing a CG Second Player cubemap in a game that isn't ULTRAKILL. Capturing normal cubemap instead");
+                    Log.LogWarning("Tried capturing a CG Second Player cubemap in a game that isn't ULTRAKILL. Capturing normal cubemap instead");
                 } else {
-                    Plugin.Log.LogInfo("Capturing CG Second Player Cubemap");
+                    Log.LogInfo("Capturing CG Second Player Cubemap");
                 }
             }
 
-            string fileName = $"{Application.productName} {DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss")}.png";
+            string fileName = $"{Application.productName} {DateTime.Now:yyyy-MM-dd HH-mm-ss}.png";
             string filePath = Path.GetFullPath(Path.Combine(configOutputPath.Value, fileName));
 
             // General Capture Vars
             RenderTexture cubeTex = new RenderTexture(configOutputWidth.Value, configOutputWidth.Value, 32);
             RenderTexture equirectTex = new RenderTexture(cubeTex.width, (int)(cubeTex.width * 0.5f), 32);
             Texture2D capturedTex = new Texture2D(equirectTex.width, equirectTex.height);
-            Quaternion originalRot = Camera.main.transform.rotation;
-            Vector3 originalPos = Camera.main.transform.position;
-
-            // Transparent Vars
-            CameraClearFlags originalClearFlags = Camera.main.clearFlags;
-            Color originalColor = Camera.main.backgroundColor;
+        
 
             // Setup the correct capture orientation
             if (!cgSecondPlayer) {
                 switch (configCaptureOrientation.Value.ToLower()) {
                     case "none":
-                        Camera.main.transform.eulerAngles = Vector3.zero;
+                        renderCam.transform.eulerAngles = Vector3.zero;
                         break;
                     case "accurate":
                         break;
                     default:
-                        Camera.main.transform.eulerAngles = new Vector3(0, Camera.main.transform.eulerAngles.y, 0);
+                        renderCam.transform.eulerAngles = new Vector3(0, renderCam.transform.eulerAngles.y, 0);
                         break;
                 }
             } else {
-                Camera.main.transform.eulerAngles = Vector3.zero; // Set orientation to none for cg second player
-                Camera.main.transform.position = new Vector3(500, 30, 50); // TODO: Let the player set how far away the camera is
+                renderCam.transform.eulerAngles = Vector3.zero; // Set orientation to none for cg second player
+                renderCam.transform.position = new Vector3(500, 30, 50); // TODO: Let the player set how far away the camera is
             }
 
             if (transparent) {
-                Camera.main.clearFlags = CameraClearFlags.Color;
-                Camera.main.backgroundColor = Color.clear;
+                renderCam.clearFlags = CameraClearFlags.Color;
+                renderCam.backgroundColor = Color.clear;
             }
 
             // Disable UI
             Dictionary<Canvas, bool> originalCanvasActives = new Dictionary<Canvas, bool>();
 
             if (!configCaptureUI.Value) {
-                foreach (Canvas canvas in GameObject.FindObjectsOfType<Canvas>()) {
+                foreach (Canvas canvas in FindObjectsOfType<Canvas>()) {
                     originalCanvasActives.Add(canvas, canvas.enabled);
                     canvas.enabled = false;
                 }
@@ -145,18 +143,9 @@ namespace CubemapMaker
 
             // Capture the cubemap
             cubeTex.dimension = TextureDimension.Cube;
-            Camera.main.transform.Rotate(new Vector3(0, 90, 0));
-            Camera.main.RenderToCubemap(cubeTex, 63, Camera.MonoOrStereoscopicEye.Left);
+            renderCam.transform.Rotate(new Vector3(0, 90, 0));
+            renderCam.RenderToCubemap(cubeTex, 63);
             cubeTex.ConvertToEquirect(equirectTex, Camera.MonoOrStereoscopicEye.Mono);
-
-            // Reset the camera to its original values
-            Camera.main.transform.rotation = originalRot;
-            Camera.main.transform.position = originalPos;
-            Camera.main.ResetAspect();
-
-            // Reset Transparent Settings. No point in branching here
-            Camera.main.clearFlags = originalClearFlags;
-            Camera.main.backgroundColor = originalColor;
 
             // Enable UI
             if (!configCaptureUI.Value) {
@@ -174,7 +163,7 @@ namespace CubemapMaker
             Directory.CreateDirectory(configOutputPath.Value);
             File.WriteAllBytes(filePath, capturedTex.EncodeToPNG());
 
-            Plugin.Log.LogInfo($"Captured cubemap to \"{filePath}\"");
+            Log.LogInfo($"Captured cubemap to \"{filePath}\"");
         }
 
         private void Update() {

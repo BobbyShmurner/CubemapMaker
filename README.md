@@ -13,6 +13,8 @@ Holding down "Left Shift" while capturing a cubemap on The Cyber Grind will capt
 
 The image will be saved to The ULTRAKILL's Cyber Grind Skybox folder by default, but in edge cases where the plugin could not find this folder (or you aren't planning on using this for ULTRAKILL), it will be saved in a folder in your Pictures directory named "Cubemaps"
 
+## Config
+
 You can find the `config.cfg` in `%AppData%/CubemapMaker/`. There you can change the output path, the capture key, the orientation of the cubemap, the output resolution, and whether or not to capture UI in a cubemap
 
 ## Second Player Cubemaps (The Cyber Grind)
